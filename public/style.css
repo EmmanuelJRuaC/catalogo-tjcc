@@ -190,6 +190,14 @@ dialog::backdrop { background: rgba(8,5,12,.76); backdrop-filter: blur(5px); -we
 .thumbs .cover:hover, .thumbs .rm:hover { color: var(--gold); }
 .form-actions { display: flex; justify-content: flex-end; gap: .6rem; padding-top: .5rem; }
 
+/* ---------- Código QR ---------- */
+.qrbox { padding: 2rem 1.5rem 1.6rem; display: grid; gap: 1rem; justify-items: center; text-align: center; }
+.qrbox h2 { font: 500 1.7rem/1.1 var(--display); margin: 0; padding-inline: 2rem; }
+#qrCanvas { width: 100%; max-width: 300px; height: auto; border-radius: 14px; background: #fff; }
+.qr-hint { color: var(--muted); font-size: .9rem; margin: 0; max-width: 34ch; }
+.qrbox .form-actions { position: static; margin: 0; padding: .3rem 0 0; background: none; width: 100%; justify-content: center; }
+.qrbox .form-actions .btn { flex: 1 1 0; }
+
 /* ---------- Avisos ---------- */
 .toasts { position: fixed; z-index: 200; left: 50%; bottom: calc(1.2rem + var(--safe-b)); transform: translateX(-50%); display: grid; gap: .5rem; width: min(92vw, 400px); pointer-events: none; }
 .toast { background: var(--surface-2); border: 1px solid var(--gold-deep); border-radius: 14px; padding: .85rem 1.1rem; box-shadow: 0 12px 34px rgba(0,0,0,.5); animation: pop .25s ease; }

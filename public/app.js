@@ -6,12 +6,13 @@ const CONFIG = {
   moneda: 'COP',            // COP, MXN, PEN, EUR, etc.
   locale: 'es-419',
   maxFotos: 5,
+  urlBase: '',              // dirección del sitio para los QR. Vacío = la actual. Pon tu dominio final antes de imprimir.
   categorias: ['Anillos', 'Collares', 'Aretes', 'Pulseras', 'Relojes', 'Dijes'],
 };
 const SESSION_MS = 10 * 60 * 1000;
 
 const $ = (s, r = document) => r.querySelector(s);
-const state = { products: [], q: '', cat: 'Todas', estado: 'todas', orden: 'recientes', exp: 0, tick: null, editing: null, items: [] };
+const state = { products: [], q: '', cat: 'Todas', estado: 'todas', orden: 'recientes', exp: 0, tick: null, editing: null, items: [], loaded: false, qrPiece: null };
 
 const money = (n) => new Intl.NumberFormat(CONFIG.locale, { style: 'currency', currency: CONFIG.moneda, maximumFractionDigits: 0 }).format(n || 0);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -62,6 +63,7 @@ function updateClock() {
 function lock() {
   clearInterval(state.tick);
   state.products = [];
+  state.loaded = false;
   $('#grid').innerHTML = '';
   $('#detailBody').innerHTML = '';
   document.querySelectorAll('dialog[open]').forEach((d) => d.close());
@@ -109,7 +111,9 @@ async function loadProducts() {
   $('#grid').innerHTML = '<div class="skel"></div>'.repeat(6);
   try {
     state.products = (await api('products')).products;
+    state.loaded = true;
     render();
+    openFromHash();
   } catch (e) { if (!$('#app').hidden) { $('#grid').innerHTML = ''; toast(e.message, true); } }
 }
 
@@ -195,6 +199,7 @@ function showDetail(id, idx = 0) {
       ${p.descripcion ? `<p class="desc">${esc(p.descripcion)}</p>` : ''}
       <div class="actions">
         <button class="btn primary" data-act="sold">${p.vendido ? 'Revertir venta' : 'Marcar como vendida'}</button>
+        <button class="btn ghost-btn" data-act="qr">Código QR</button>
         <button class="btn ghost-btn" data-act="edit">Editar</button>
         <button class="btn ghost-btn" data-act="del">Eliminar</button>
       </div>
@@ -211,6 +216,7 @@ $('#detailBody').addEventListener('click', async (e) => {
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (!act) return;
   const p = state.products.find((x) => x.id === id);
+  if (act === 'qr') return showQR(p);
   if (act === 'edit') { $('#detail').close(); return openForm(p); }
   if (act === 'sold') {
     const btn = e.target.closest('button'); btn.disabled = true;
@@ -328,6 +334,67 @@ $('#form').addEventListener('submit', async (e) => {
     err.textContent = ex.message; err.hidden = false;
   } finally { btn.disabled = false; btn.textContent = 'Guardar pieza'; }
 });
+
+/* ====== Código QR por pieza ====== */
+const pieceURL = (p) => (CONFIG.urlBase || location.origin).replace(/\/$/, '') + '/#p=' + p.id;
+
+function qrCanvas(p) {
+  const qr = qrcode(0, 'M');
+  qr.addData(pieceURL(p));
+  qr.make();
+  const n = qr.getModuleCount(), cell = Math.floor(520 / n), size = cell * n, pad = Math.round((640 - size) / 2);
+  const c = document.createElement('canvas');
+  c.width = 640; c.height = pad + size + 120;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height);
+  x.fillStyle = '#000';
+  for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) x.fillRect(pad + k * cell, pad + r * cell, cell, cell);
+  x.textAlign = 'center'; x.fillStyle = '#111';
+  x.font = '600 34px Georgia, serif';
+  let name = p.nombre;
+  while (x.measureText(name).width > 560 && name.length > 3) name = name.slice(0, -2);
+  if (name !== p.nombre) name = name.trimEnd() + '…';
+  x.fillText(name, 320, pad + size + 48);
+  if (p.codigo) { x.font = '500 26px Arial, sans-serif'; x.fillStyle = '#555'; x.fillText(p.codigo, 320, pad + size + 90); }
+  return c;
+}
+
+function showQR(p) {
+  state.qrPiece = p;
+  const c = qrCanvas(p), view = $('#qrCanvas');
+  view.width = c.width; view.height = c.height;
+  view.getContext('2d').drawImage(c, 0, 0);
+  $('#qrDlg').showModal();
+}
+
+$('#qrDown').addEventListener('click', () => {
+  const p = state.qrPiece; if (!p) return;
+  $('#qrCanvas').toBlob((b) => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(b);
+    a.download = `qr-${(p.codigo || p.nombre).replace(/[^\w-]+/g, '_')}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }, 'image/png');
+});
+
+$('#qrPrint').addEventListener('click', () => {
+  const w = window.open('', '_blank');
+  if (!w) return toast('Permite las ventanas emergentes para imprimir', true);
+  const src = $('#qrCanvas').toDataURL('image/png');
+  w.document.write(`<!doctype html><title>QR</title><style>@page{margin:8mm}body{margin:0;display:grid;place-items:center}img{width:50mm}</style><img src="${src}" onload="setTimeout(()=>print(),150)">`);
+  w.document.close();
+});
+
+// Al escanear un QR la dirección trae #p=ID: se abre esa pieza cuando el catálogo ya cargó
+function openFromHash() {
+  const m = location.hash.match(/^#p=([a-f0-9-]{36})$/i);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  const p = state.products.find((x) => x.id === m[1].toLowerCase());
+  if (p) showDetail(p.id); else toast('No encontramos esa pieza. Puede que se haya eliminado.', true);
+}
+window.addEventListener('hashchange', () => { if (!$('#app').hidden && state.loaded) openFromHash(); });
 
 /* ====== Cierre de diálogos ====== */
 document.querySelectorAll('dialog').forEach((d) => {

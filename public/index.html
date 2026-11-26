@@ -26,6 +26,7 @@
         <span class="sr">Contraseña</span>
         <div class="pw">
           <input id="pw" type="password" placeholder="Contraseña" required autofocus autocomplete="current-password">
+          <button type="button" id="pwToggle" class="ghost" aria-label="Mostrar contraseña">Ver</button>
         </div>
       </label>
       <p id="loginErr" class="err" role="alert" hidden></p>
@@ -155,6 +156,20 @@
     </form>
   </dialog>
 
+  <!-- ===== Código QR ===== -->
+  <dialog id="qrDlg" class="sheet tiny">
+    <button class="x" data-close aria-label="Cerrar">×</button>
+    <div class="qrbox">
+      <h2>Código QR</h2>
+      <canvas id="qrCanvas" aria-label="Código QR de la pieza"></canvas>
+      <p class="qr-hint">Al escanearlo se abre esta pieza. Si la sesión venció, primero pide la contraseña.</p>
+      <div class="form-actions">
+        <button type="button" id="qrPrint" class="btn ghost-btn">Imprimir</button>
+        <button type="button" id="qrDown" class="btn primary">Descargar PNG</button>
+      </div>
+    </div>
+  </dialog>
+
   <div id="toasts" class="toasts" aria-live="polite"></div>
 
   <!-- ===== Sesión terminada ===== -->
@@ -167,6 +182,7 @@
     </div>
   </div>
 
+  <script src="qr.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
