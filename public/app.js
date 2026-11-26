@@ -2,8 +2,8 @@
 
 /* ====== Configuración (edita aquí) ====== */
 const CONFIG = {
-  marca: 'Maison',          // nombre de tu joyería
-  moneda: 'USD',            // COP, MXN, PEN, EUR, etc.
+  marca: 'Taller Joyeria CC',          // nombre de tu joyería
+  moneda: 'COP',            // COP, MXN, PEN, EUR, etc.
   locale: 'es-419',
   maxFotos: 5,
   categorias: ['Anillos', 'Collares', 'Aretes', 'Pulseras', 'Relojes', 'Dijes'],
