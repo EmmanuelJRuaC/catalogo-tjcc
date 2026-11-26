@@ -1,0 +1,12 @@
+# Secretos locales (contienen tu contraseña)
+.dev.vars
+.env
+.env.*
+
+# Wrangler / Cloudflare
+.wrangler/
+node_modules/
+
+# Sistema
+.DS_Store
+Thumbs.db
