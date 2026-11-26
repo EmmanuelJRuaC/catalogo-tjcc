@@ -33,11 +33,14 @@ async function api(path, { method = 'GET', body, raw, type } = {}) {
 }
 
 function toast(msg, bad) {
-  const t = document.createElement('div');
+  const box = $('#toasts'), t = document.createElement('div');
   t.className = 'toast' + (bad ? ' bad' : '');
   t.textContent = msg;
-  $('#toasts').append(t);
-  setTimeout(() => t.remove(), 3500);
+  box.append(t);
+  // popover = capa superior: el aviso se ve incluso encima de un formulario abierto
+  try { box.hidePopover(); } catch {}
+  try { box.showPopover(); } catch {}
+  setTimeout(() => { t.remove(); if (!box.children.length) { try { box.hidePopover(); } catch {} } }, 3500);
 }
 
 /* ====== Sesión (10 min, sobrevive a recargas gracias a la cookie) ====== */
