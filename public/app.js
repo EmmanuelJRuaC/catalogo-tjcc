@@ -27,7 +27,7 @@ async function api(path, { method = 'GET', body, raw, type } = {}) {
   else if (body !== undefined) { payload = JSON.stringify(body); headers['content-type'] = 'application/json'; }
   const res = await fetch('/api/' + path, { method, headers, body: payload, credentials: 'same-origin' });
   const data = await res.json().catch(() => ({}));
-  if (res.status === 401 && path !== 'login') { lock(); throw new Error('Sesión expirada'); }
+  if (res.status === 401 && path !== 'login' && path !== 'session') { lock(); throw new Error('Sesión expirada'); }
   if (!res.ok) throw new Error(data.error || 'Ocurrió un error');
   return data;
 }
