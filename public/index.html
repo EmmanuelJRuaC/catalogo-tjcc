@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#14101a">
+  <title>Catálogo de Joyería</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ===== Acceso ===== -->
+  <main id="login" class="login">
+    <form id="loginForm" class="login-card" autocomplete="off">
+      <svg class="gem" viewBox="0 0 120 100" aria-hidden="true">
+        <path d="M30 6h60l26 30-56 62L4 36z" fill="none" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M4 36h112M30 6l30 30 30-30M60 36 40 36 60 98 80 36z M40 36 30 6M80 36l10-30" fill="none" stroke="currentColor" stroke-width="1" opacity=".7"/>
+      </svg>
+      <h1 class="brand" data-brand>Maison</h1>
+      <p class="login-sub">Catálogo privado. Ingresa tu contraseña para ver las piezas.</p>
+      <label class="field">
+        <span class="sr">Contraseña</span>
+        <div class="pw">
+          <input id="pw" type="password" placeholder="Contraseña" required autofocus autocomplete="current-password">
+          <button type="button" id="pwToggle" class="ghost" aria-label="Mostrar contraseña">Ver</button>
+        </div>
+      </label>
+      <p id="loginErr" class="err" role="alert" hidden></p>
+      <button class="btn primary wide" id="loginBtn">Entrar al catálogo</button>
+      <p class="hint">La sesión dura 10 minutos.</p>
+    </form>
+  </main>
+
+  <!-- ===== App ===== -->
+  <div id="app" hidden>
+    <header class="top">
+      <div class="top-in">
+        <h1 class="brand sm" data-brand>Maison</h1>
+        <div class="top-actions">
+          <div id="clock" class="clock" title="Tiempo restante de la sesión">
+            <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="bg" cx="18" cy="18" r="15"/><circle id="ring" class="fg" cx="18" cy="18" r="15"/></svg>
+            <span id="clockTxt">10:00</span>
+          </div>
+          <button id="newBtn" class="btn primary btn-new"><span class="plus" aria-hidden="true">+</span><span class="lbl">Nueva pieza</span></button>
+          <button id="logoutBtn" class="btn ghost-btn">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="intro">
+        <h2>Colección</h2>
+        <ul class="stats" id="stats"></ul>
+      </section>
+
+      <section class="tools">
+        <label class="search">
+          <span class="sr">Buscar</span>
+          <input id="q" type="search" placeholder="Buscar por nombre, código, material o piedra">
+        </label>
+        <div class="selects">
+          <select id="estado" aria-label="Estado">
+            <option value="todas">Todas</option>
+            <option value="disponible">Disponibles</option>
+            <option value="vendida">Vendidas</option>
+          </select>
+          <select id="orden" aria-label="Ordenar">
+            <option value="recientes">Más recientes</option>
+            <option value="precio-asc">Precio: menor a mayor</option>
+            <option value="precio-desc">Precio: mayor a menor</option>
+            <option value="nombre">Nombre A–Z</option>
+          </select>
+        </div>
+        <div id="chips" class="chips" role="tablist" aria-label="Categorías"></div>
+      </section>
+
+      <section id="grid" class="grid" aria-live="polite"></section>
+      <div id="empty" class="empty" hidden></div>
+    </main>
+  </div>
+
+  <!-- ===== Detalle ===== -->
+  <dialog id="detail" class="sheet">
+    <button class="x" data-close aria-label="Cerrar">×</button>
+    <div id="detailBody" class="detail"></div>
+  </dialog>
+
+  <!-- ===== Formulario ===== -->
+  <dialog id="formDlg" class="sheet narrow">
+    <button class="x" data-close aria-label="Cerrar">×</button>
+    <form id="form" class="form" novalidate>
+      <h2 id="formTitle">Nueva pieza</h2>
+
+      <div class="field">
+        <span class="label">Fotografías <small>(la primera es la portada · máx. 5)</small></span>
+        <label id="drop" class="drop">
+          <input id="files" type="file" accept="image/*" multiple hidden>
+          <strong>Toca para elegir fotos</strong>
+          <small>o arrástralas aquí</small>
+        </label>
+        <ul id="thumbs" class="thumbs"></ul>
+      </div>
+
+      <label class="field"><span class="label">Nombre *</span>
+        <input name="nombre" required maxlength="120" placeholder="Anillo solitario"></label>
+
+      <div class="two">
+        <label class="field"><span class="label">Categoría</span>
+          <input name="categoria" list="cats" maxlength="60" placeholder="Anillos">
+          <datalist id="cats"></datalist></label>
+        <label class="field"><span class="label">Código</span>
+          <input name="codigo" maxlength="40" placeholder="AN-001"></label>
+      </div>
+
+      <div class="two">
+        <label class="field"><span class="label">Precio</span>
+          <input name="precio" type="number" min="0" step="any" inputmode="decimal" placeholder="0"></label>
+        <label class="field"><span class="label">Peso</span>
+          <input name="peso" maxlength="40" placeholder="4.2 g"></label>
+      </div>
+
+      <div class="two">
+        <label class="field"><span class="label">Material</span>
+          <input name="material" maxlength="100" placeholder="Oro 18k"></label>
+        <label class="field"><span class="label">Piedra</span>
+          <input name="piedra" maxlength="100" placeholder="Diamante 0.5 ct"></label>
+      </div>
+
+      <label class="field"><span class="label">Medidas</span>
+        <input name="medidas" maxlength="60" placeholder="Talla 7 · 18 cm"></label>
+
+      <label class="field"><span class="label">Descripción</span>
+        <textarea name="descripcion" rows="4" maxlength="1500" placeholder="Detalles de la pieza"></textarea></label>
+
+      <p id="formErr" class="err" role="alert" hidden></p>
+      <div class="form-actions">
+        <button type="button" class="btn ghost-btn" data-close>Cancelar</button>
+        <button id="saveBtn" class="btn primary">Guardar pieza</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ===== Confirmación ===== -->
+  <dialog id="confirmDlg" class="sheet tiny">
+    <form method="dialog" class="confirm">
+      <h2 id="confirmTitle"></h2>
+      <p id="confirmMsg"></p>
+      <div class="form-actions">
+        <button value="no" class="btn ghost-btn">Cancelar</button>
+        <button value="yes" id="confirmOk" class="btn danger">Eliminar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <!-- ===== Sesión terminada ===== -->
+  <div id="expired" class="expired" hidden role="alertdialog" aria-modal="true" aria-labelledby="expTitle">
+    <div class="login-card">
+      <svg class="gem" viewBox="0 0 120 100" aria-hidden="true"><path d="M30 6h60l26 30-56 62L4 36z" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+      <h2 id="expTitle">Tu sesión terminó</h2>
+      <p class="login-sub">Pasaron los 10 minutos. Recarga la página e ingresa la contraseña otra vez.</p>
+      <button id="reloadBtn" class="btn primary wide">Recargar página</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
