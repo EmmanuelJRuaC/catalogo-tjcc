@@ -5,7 +5,7 @@ compatibility_date = "2024-11-01"
 # 1) npx wrangler kv namespace create CATALOGO   -> pega aquí el id que te devuelve
 [[kv_namespaces]]
 binding = "CATALOGO"
-id = "PEGA_AQUI_EL_ID_DEL_KV"
+id = "833cd91aa53d4fd291f76d5a54f3d128"
 
 # 2) npx wrangler r2 bucket create joyeria-imagenes
 [[r2_buckets]]
